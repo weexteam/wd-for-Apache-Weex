@@ -1,2 +1,1 @@
-# weex-wd
-Macaca Weex webdriver
+macaca wd for weex

@@ -1,0 +1,38 @@
+{
+  "name": "@ali/macaca-weex-wd",
+  "version": "1.0.0",
+  "description": "macaca wd for weex",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:weexteam/weex-wd.git"
+  },
+  "keywords": [
+    "macaca",
+    "wd",
+    "weex"
+  ],
+  "author": "黄巢 <hanqiang.hq@alibaba-inc.com>",
+  "contributors":[
+    "sospartan <sospartan@apache.org>"
+  ],
+  "license": "Apache 2.0",
+  "dependencies": {
+    "lodash": "^4.17.3",
+    "macaca-wd": "^1.0.14"
+  },
+  "devDependencies": {
+    "macaca-cli": "^1.1.0",
+    "mocha": "^3.2.0",
+    "should": "^11.1.2"
+  },
+  "publishConfig": {
+    "registry": "http://registry.npm.alibaba-inc.com"
+  }
+}
