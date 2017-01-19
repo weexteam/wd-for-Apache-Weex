@@ -13,8 +13,18 @@ function mapFunc(node, isIOS){
   switch(node){
     case "text":
       return "android.view.View";
+    case "textarea":
+      return "android.widget.EditText";
     case "input":
       return "android.widget.EditText";
+    case "a":
+      return "android.view.View";
+    case "image":
+      return "android.widget.ImageView";
+    case "video":
+      return "android.widget.VideoView";
+    case "web":
+      return "android.webkit.WebView";
     case "div":
     default:
       return "android.widget.FrameLayout";

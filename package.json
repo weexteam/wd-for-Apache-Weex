@@ -1,5 +1,5 @@
 {
-  "name": "@ali/macaca-weex-wd",
+  "name": "weex-wd",
   "version": "1.0.0",
   "description": "macaca wd for weex",
   "main": "index.js",
@@ -20,7 +20,8 @@
   ],
   "author": "黄巢 <hanqiang.hq@alibaba-inc.com>",
   "contributors":[
-    "sospartan <sospartan@apache.org>"
+    "sospartan <sospartan@apache.org>",
+    "xspider <xspider.org@gmail.com>"
   ],
   "license": "Apache 2.0",
   "dependencies": {
@@ -31,8 +32,5 @@
     "macaca-cli": "^1.1.0",
     "mocha": "^3.2.0",
     "should": "^11.1.2"
-  },
-  "publishConfig": {
-    "registry": "http://registry.npm.alibaba-inc.com"
   }
 }
