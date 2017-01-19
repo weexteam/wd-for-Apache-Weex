@@ -43,6 +43,7 @@ describe('macaca mobile sample', function() {
   });
 
   it('#0 should works with macaca', function() {
+    console.log(driver.getInitConfig());
     return driver
       .get('https://www.taobao.com')
       .elementById('index-kw')
