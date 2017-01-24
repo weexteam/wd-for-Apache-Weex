@@ -82,7 +82,7 @@ module.exports = function(opts){
     return this._wIsIOS ?
       this
         .wElement(xpath)
-        ._text() :
+        .text() :
       this
         .wElement(xpath)
         .getProperty('description');
