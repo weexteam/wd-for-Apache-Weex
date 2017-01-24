@@ -1,6 +1,6 @@
 {
   "name": "weex-wd",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "macaca wd for weex",
   "main": "index.js",
   "directories": {
@@ -19,14 +19,14 @@
     "weex"
   ],
   "author": "黄巢 <hanqiang.hq@alibaba-inc.com>",
-  "contributors":[
+  "contributors": [
     "sospartan <sospartan@apache.org>",
     "xspider <xspider.org@gmail.com>"
   ],
   "license": "Apache 2.0",
   "dependencies": {
     "lodash": "^4.17.3",
-    "macaca-wd": "^1.0.14"
+    "webdriver-client": "^1.0.17"
   },
   "devDependencies": {
     "macaca-cli": "^1.1.0",

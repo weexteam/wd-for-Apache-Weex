@@ -78,7 +78,7 @@ module.exports = function(opts){
       });
   });
 
-  wd.addPromiseChainMethod('textOfXPath', function(xpath) {
+  wd.addPromiseChainMethod('wText', function(xpath) {
     return this._wIsIOS ?
       this
         .wElement(xpath)
@@ -105,11 +105,17 @@ module.exports = function(opts){
     //elementsByXPath
     var _elementByXPath = ins.elementByXPath;
     ins.elementByXPath = function(path){
-      return this.wElement(path);
+      return this.wElement(path)
+        .then(function(d){
+          var _text = d.text;
+          d.text = function(){
+            return ins._wIsAndroid ? d.getProperty('description') : _text.call(d);
+          };
+          return d;
+        })
+
     };
     ins._elementByXPath = _elementByXPath;
-
-
 
     //back
     var _back = ins.back;
@@ -117,8 +123,6 @@ module.exports = function(opts){
       return this.wBack();
     };
     ins._back = _back;
-
-
 
     return ins;
   };
