@@ -1,4 +1,4 @@
-var wd = require('macaca-wd');
+var WD = require('webdriver-client');
 var _ = require('lodash');
 
 var xPathPrefixForAndroid = '//android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.view.View[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]';
@@ -47,61 +47,96 @@ function mapXPath(xpath, isIOS){
     results.push(mapFunc(nodeParts[1]) + pos, isIOS);
   });
 
-  return results.join('/')
+  var oo = results.join('/');
+
+  return oo.substring(0, oo.length -1);
 }
 
-_.mapKeys({
-  promiseChainRemote: wd.promiseChainRemote,
-  promiseRemote: wd.promiseRemote,
-  asyncRemote: wd.asyncRemote
-}, function(func, method){
-  wd[method] = function(){
-    var instance = func.apply(wd, arguments);
-    var instanceInit = instance.init;
-    instance['init'] = function(){
-      var args = [].slice.call(arguments, 0);
-      instance._wIsIOS = args[0]['platformName'] === 'iOS';
-      instance._wIsAndroid = args[0]['platformName'] === 'Android';
-      return instanceInit.apply(instance, args);
-    };
-    return instance;
-  };
-});
 
-wd.addPromiseChainMethod('wBack', function(){
-  return this._wIsIOS ?
-    this.elementByName('back').sleep(1000).click().sleep(1000) :
-    this.back();
-});
+module.exports = function(opts){
+  var wd = WD(opts);
+  wd.addPromiseChainMethod('wBack', function(){
+    return this._wIsIOS ?
+      this.elementByName('back').sleep(1000).click().sleep(1000) :
+      this._back();
+  });
 
-wd.addPromiseChainMethod('wElements',function(xpath){
+  wd.addPromiseChainMethod('wGet', function(url){
+    return this._get(url);
+  });
 
-  return this.elementsByXPath(mapXPath(xpath));
-});
+  wd.addPromiseChainMethod('wElementsByXPath',function(xpath){
+    return this._elementsByXPath(mapXPath(xpath));
+  });
 
-wd.addPromiseChainMethod('wElement',function(xpath){
-  return this
-      .elementsByXPath(mapXPath(xpath))
+  wd.addPromiseChainMethod('wElements',function(xpath){
+    return this.wElementsByXPath(xpath);
+  });
+
+  wd.addPromiseChainMethod('wElement',function(xpath){
+    return this
+      .wElements(xpath)
       .then(function(el){
         return el[0];
       });
-});
+  });
 
-wd.addPromiseChainMethod('textOfXPath', function(xpath) {
-  var nxpath = mapXPath(xpath);
-  return this._wIsIOS ?
-    this
-      .elementsByXPath(nxpath)
-      .then(function(el){
-        return el[0];
-      })
-      .text() :
-    this
-      .elementsByXPath(nxpath)
-      .then(function(el){
-        return el[0];
-      })
-      .getProperty('description');
-});
+  wd.addPromiseChainMethod('textOfXPath', function(xpath) {
+    return this._wIsIOS ?
+      this
+        .wElement(xpath)
+        ._text() :
+      this
+        .wElement(xpath)
+        .getProperty('description');
+  });
 
-module.exports = wd;
+  var _initPromiseChain = wd.initPromiseChain;
+  wd.initPromiseChain = function(){
+    var ins = _initPromiseChain.apply(this);
+
+    ins._wIsIOS = opts['platformName'] === 'iOS';
+    ins._wIsAndroid = opts['platformName'] === 'Android';
+
+    //elementsByXPath
+    var _elementsByXPath = ins.elementsByXPath;
+    ins.elementsByXPath = function(path){
+      return this.wElements(path);
+    };
+    ins._elementsByXPath = _elementsByXPath;
+
+
+    //elementByXPath
+    var _elementByXPath = ins.elementByXPath;
+    ins.elementByXPath = function(path){
+      return this.wElement(path);
+    };
+    ins._elementByXPath = _elementByXPath;
+
+
+    //back
+    var _back = ins.back;
+    ins.back = function(){
+      return this.wBack();
+    };
+    ins._back = _back;
+
+    //get
+    var _get = ins.get;
+    ins.get = function(url){
+      return this.wGet(url);
+    };
+    ins._get = _get;
+
+    //text
+    var _text = ins.text;
+    ins.text = function(xpath){
+      return xpath ? this.textOfXPath(xpath) : ins._text();
+    };
+    ins._text = _text;
+    return ins;
+  };
+
+
+  return wd;
+};
