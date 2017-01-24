@@ -61,9 +61,6 @@ module.exports = function(opts){
       this._back();
   });
 
-  wd.addPromiseChainMethod('wGet', function(url){
-    return this._get(url);
-  });
 
   wd.addPromiseChainMethod('wElementsByXPath',function(xpath){
     return this._elementsByXPath(mapXPath(xpath));
@@ -105,13 +102,13 @@ module.exports = function(opts){
     };
     ins._elementsByXPath = _elementsByXPath;
 
-
-    //elementByXPath
+    //elementsByXPath
     var _elementByXPath = ins.elementByXPath;
     ins.elementByXPath = function(path){
       return this.wElement(path);
     };
     ins._elementByXPath = _elementByXPath;
+
 
 
     //back
@@ -121,19 +118,8 @@ module.exports = function(opts){
     };
     ins._back = _back;
 
-    //get
-    var _get = ins.get;
-    ins.get = function(url){
-      return this.wGet(url);
-    };
-    ins._get = _get;
 
-    //text
-    var _text = ins.text;
-    ins.text = function(xpath){
-      return xpath ? this.textOfXPath(xpath) : ins._text();
-    };
-    ins._text = _text;
+
     return ins;
   };
 
