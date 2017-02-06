@@ -61,6 +61,19 @@ module.exports = function(opts){
       this._back();
   });
 
+  wd.addPromiseChainMethod('wGet', function (url) {
+    if(this._wIsIOS){
+      return this
+            ._get(url)
+            .catch(function (e) {
+                console.log("catch in get")
+            })
+            .then();
+    }else{
+      return this._get(url);
+    }
+  });
+
 
   wd.addPromiseChainMethod('wElementsByXPath',function(xpath){
     return this._elementsByXPath(mapXPath(xpath));
@@ -123,6 +136,15 @@ module.exports = function(opts){
       return this.wBack();
     };
     ins._back = _back;
+
+    //get 
+    /**
+     * execute get will throw err in iOS
+     */
+    var _get = ins.get;
+    ins.get = function(url){
+      return this.wGet(url);
+    };
 
     return ins;
   };
