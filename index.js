@@ -145,6 +145,7 @@ module.exports = function(opts){
     ins.get = function(url){
       return this.wGet(url);
     };
+    ins._get = _get;
 
     return ins;
   };
