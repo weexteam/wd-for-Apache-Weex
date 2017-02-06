@@ -2,12 +2,20 @@ var WD = require('webdriver-client');
 var _ = require('lodash');
 
 var xPathPrefixForAndroid = '//android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.view.View[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]';
-var xPathPrefixForIOS = '';
+var xPathPrefixForIOS = "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]"
 var NODE_PATTERN = /([a-z-]+)(\[(\d+)\])?/;
 
 function mapFunc(node, isIOS){
   if(isIOS){
-    return;
+    switch (node) {
+      case "input":
+        return "XCUIElementTypeTextField";
+      case "text":
+        return "XCUIElementTypeStaticText";
+      case "div":
+      default:
+        return "XCUIElementTypeOther"
+     }
   }
 
   switch(node){
@@ -43,13 +51,11 @@ function mapXPath(xpath, isIOS){
     if(!nodeParts){
       return
     }
-    var pos = nodeParts[3] === undefined ? '' : "[" + nodeParts[3] + "]";
-    results.push(mapFunc(nodeParts[1]) + pos, isIOS);
+    var pos = nodeParts[3] === undefined ? '[1]' : "[" + nodeParts[3] + "]";
+    results.push(mapFunc(nodeParts[1], isIOS) + pos);
   });
 
-  var oo = results.join('/');
-
-  return oo.substring(0, oo.length -1);
+  return results.join('/');
 }
 
 
@@ -76,7 +82,7 @@ module.exports = function(opts){
 
 
   wd.addPromiseChainMethod('wElementsByXPath',function(xpath){
-    return this._elementsByXPath(mapXPath(xpath));
+    return this._elementsByXPath(mapXPath(xpath,this._wIsIOS));
   });
 
   wd.addPromiseChainMethod('wElements',function(xpath){
@@ -89,16 +95,6 @@ module.exports = function(opts){
       .then(function(el){
         return el[0];
       });
-  });
-
-  wd.addPromiseChainMethod('wText', function(xpath) {
-    return this._wIsIOS ?
-      this
-        .wElement(xpath)
-        .text() :
-      this
-        .wElement(xpath)
-        .getProperty('description');
   });
 
   var _initPromiseChain = wd.initPromiseChain;
@@ -121,9 +117,11 @@ module.exports = function(opts){
       return this.wElement(path)
         .then(function(d){
           var _text = d.text;
-          d.text = function(){
-            return ins._wIsAndroid ? d.getProperty('description') : _text.call(d);
-          };
+          d.text = ins._wIsAndroid?function(){
+            return  d.getProperty('description').then((obj)=>{ return obj.description});
+          }:function(){
+            return d.getProperty('value');
+          }
           return d;
         })
 
