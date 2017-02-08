@@ -12,6 +12,8 @@ function mapFunc(node, isIOS){
         return "XCUIElementTypeTextField";
       case "text":
         return "XCUIElementTypeStaticText";
+      case "list":
+        return "XCUIElementTypeTable"
       case "div":
       default:
         return "XCUIElementTypeOther"
@@ -33,6 +35,8 @@ function mapFunc(node, isIOS){
       return "android.widget.VideoView";
     case "web":
       return "android.webkit.WebView";
+    case "list":
+      return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.support.v7.widget.RecyclerView";
     case "div":
     default:
       return "android.widget.FrameLayout";
