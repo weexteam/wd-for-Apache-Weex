@@ -101,6 +101,10 @@ module.exports = function(opts){
       });
   });
 
+  wd.addPromiseChainMethod('wWaitForElementByXPath',function(xpath,time,interval){
+    return this._waitForElementByXPath(mapXPath(xpath,this._wIsIOS),time,interval);
+  });
+
   var _initPromiseChain = wd.initPromiseChain;
   wd.initPromiseChain = function(){
     var ins = _initPromiseChain.apply(this);
@@ -131,6 +135,13 @@ module.exports = function(opts){
 
     };
     ins._elementByXPath = _elementByXPath;
+
+    //waitForElementByXPath
+    var _waitForElementByXPath = ins.waitForElementByXPath;
+    ins.waitForElementByXPath = function(path,time,interval){
+      return this.wWaitForElementByXPath(path,time,interval);
+    }
+    ins._waitForElementByXPath = _waitForElementByXPath;
 
     //back
     var _back = ins.back;
