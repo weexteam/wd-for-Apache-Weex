@@ -46,7 +46,8 @@ function mapFunc(node, isIOS){
 function mapXPath(xpath, isIOS){
   var results = [isIOS ? xPathPrefixForIOS : xPathPrefixForAndroid];
   var parts = xpath.split('/');
-  _.map(parts, function(part){
+  var length = parts.length;
+  _.map(parts, function(part,index){
     if(!part || part.length==0){
       return
     }
@@ -55,7 +56,8 @@ function mapXPath(xpath, isIOS){
     if(!nodeParts){
       return
     }
-    var pos = nodeParts[3] === undefined ? '[1]' : "[" + nodeParts[3] + "]";
+    //ignore last, for multiple item find
+    var pos = nodeParts[3] === undefined ? (index == length-1?'':'[1]') : "[" + nodeParts[3] + "]";
     results.push(mapFunc(nodeParts[1], isIOS) + pos);
   });
 
@@ -124,11 +126,13 @@ module.exports = function(opts){
     ins.elementByXPath = function(path){
       return this.wElement(path)
         .then(function(d){
-          var _text = d.text;
-          d.text = ins._wIsAndroid?function(){
-            return  d.getProperty('description').then((obj)=>{ return obj.description});
-          }:function(){
-            return d.getProperty('value');
+          if(d != undefined){
+            var _text = d.text;
+            d.text = ins._wIsAndroid?function(){
+              return  d.getProperty('description').then((obj)=>{ return obj.description});
+            }:function(){
+              return d.getProperty('value');
+            }
           }
           return d;
         })
