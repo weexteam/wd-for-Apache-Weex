@@ -113,6 +113,7 @@ module.exports = function(opts){
 
     ins._wIsIOS = opts['platformName'] === 'iOS';
     ins._wIsAndroid = opts['platformName'] === 'Android';
+    ins._slowEnv = opts['slowEnv'];
 
     //elementsByXPath
     var _elementsByXPath = ins.elementsByXPath;
@@ -132,6 +133,13 @@ module.exports = function(opts){
               return  d.getProperty('description').then((obj)=>{ return obj.description});
             }:function(){
               return d.getProperty('value');
+            }
+
+            if(ins._slowEnv){
+              d._click = d.click;
+              d.click = function(time){
+                return d._click(time).sleep(5000);
+              }
             }
           }
           return d;
