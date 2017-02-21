@@ -92,7 +92,7 @@ module.exports = function(opts){
 
 
   wd.addPromiseChainMethod('wElementsByXPath',function(xpath){
-    return this._elementsByXPath(mapXPath(xpath,this._wIsIOS));
+    return this._elementsByXPath(mapXPath(xpath,_wIsIOS));
   });
 
   wd.addPromiseChainMethod('wElements',function(xpath){
