@@ -64,17 +64,21 @@ function mapXPath(xpath, isIOS){
   return results.join('/');
 }
 
+var _wIsIOS,_slowEnv;
 
 module.exports = function(opts){
   var wd = WD(opts);
+  _wIsIOS = opts['platformName'] === 'iOS';
+  _slowEnv = opts['slowEnv'];
+
   wd.addPromiseChainMethod('wBack', function(){
-    return this._wIsIOS ?
+    return _wIsIOS ?
       this.elementByName('back').sleep(1000).click().sleep(1000) :
       this._back();
   });
 
   wd.addPromiseChainMethod('wGet', function (url) {
-    if(this._wIsIOS){
+    if(_wIsIOS){
       return this
             ._get(url)
             .catch(function (e) {
@@ -104,16 +108,31 @@ module.exports = function(opts){
   });
 
   wd.addPromiseChainMethod('wWaitForElementByXPath',function(xpath,time,interval){
-    return this._waitForElementByXPath(mapXPath(xpath,this._wIsIOS),time,interval);
+    return this._waitForElementByXPath(mapXPath(xpath,_wIsIOS),time,interval);
   });
 
   var _initPromiseChain = wd.initPromiseChain;
   wd.initPromiseChain = function(){
     var ins = _initPromiseChain.apply(this);
 
-    ins._wIsIOS = opts['platformName'] === 'iOS';
-    ins._wIsAndroid = opts['platformName'] === 'Android';
-    ins._slowEnv = opts['slowEnv'];
+    if(_slowEnv){
+      ins._initDriver = ins.initDriver
+      ins._initFailedCount = 0;
+      ins.initDriver = function(){
+        var self = this;
+        if(ins._initFailedCount >= 4){
+          console.error("last retry")
+          return ins._initDriver.apply(self);
+        }else{
+          return ins._initDriver.apply(self)
+            .catch(function(e){
+              ins._initFailedCount++;
+              console.error("init failed, retry later");
+              return ins.sleep(1000).initDriver();
+            })
+        }
+      }
+    }
 
     //elementsByXPath
     var _elementsByXPath = ins.elementsByXPath;
@@ -129,13 +148,13 @@ module.exports = function(opts){
         .then(function(d){
           if(d != undefined){
             var _text = d.text;
-            d.text = ins._wIsAndroid?function(){
-              return  d.getProperty('description').then((obj)=>{ return obj.description});
-            }:function(){
+            d.text = _wIsIOS?function(){
               return d.getProperty('value');
-            }
+            }:function(){
+              return  d.getProperty('description').then((obj)=>{ return obj.description});
+            };
 
-            if(ins._slowEnv){
+            if(_slowEnv){
               d._click = d.click;
               d.click = function(time){
                 return d._click(time).sleep(5000);
