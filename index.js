@@ -177,6 +177,9 @@ module.exports = function(opts){
     //back
     var _back = ins.back;
     ins.back = function(){
+      if(_slowEnv){
+        return this.wBack().sleep(5000);
+      }
       return this.wBack();
     };
     ins._back = _back;
@@ -187,6 +190,9 @@ module.exports = function(opts){
      */
     var _get = ins.get;
     ins.get = function(url){
+      if(_slowEnv){
+        return this.wGet(url).sleep(5000);
+      }
       return this.wGet(url);
     };
     ins._get = _get;
