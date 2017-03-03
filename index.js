@@ -197,6 +197,34 @@ module.exports = function(opts){
     };
     ins._get = _get;
 
+    /**
+     * add retry in slow _slowEnv
+     */
+    if(_slowEnv){
+      const _elemFailLimit = 10;
+      ins._elements = ins.elements;
+      ins._elemFailCount = 0;
+      ins.elements = function(){
+        var self = this;
+        var args = arguments;
+        if(ins._elemFailCount >= _elemFailLimit-1){
+          console.error("last retry")
+          return ins._elements.apply(self,args);
+        }else{
+          return ins
+          ._elements
+          .apply(self,args)
+          .catch(function(e){
+            console.log("catched,retry again");
+            ins._elemFailCount++;
+            return ins.sleep(1000).then(()=>{
+              return ins.elements.apply(self,args);
+            })
+          });
+        }
+      }
+    }
+
     return ins;
   };
 

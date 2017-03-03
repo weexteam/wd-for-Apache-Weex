@@ -1,6 +1,6 @@
 {
   "name": "weex-wd",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "macaca wd for weex",
   "main": "index.js",
   "directories": {
