@@ -14,6 +14,8 @@ function mapFunc(node, isIOS){
         return "XCUIElementTypeStaticText";
       case "list":
         return "XCUIElementTypeTable"
+      case "scroller":
+        return "XCUIElementTypeScrollView";
       case "div":
       default:
         return "XCUIElementTypeOther"
@@ -37,6 +39,8 @@ function mapFunc(node, isIOS){
       return "android.webkit.WebView";
     case "list":
       return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.support.v7.widget.RecyclerView";
+    case "scroller":
+      return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.ScrollView[1]/android.widget.FrameLayout"
     case "div":
     default:
       return "android.widget.FrameLayout";
