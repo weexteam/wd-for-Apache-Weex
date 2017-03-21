@@ -14,6 +14,10 @@ function mapFunc(node, isIOS){
         return "XCUIElementTypeStaticText";
       case "list":
         return "XCUIElementTypeTable"
+      case "waterfall":
+        return "XCUIElementTypeCollectionView"
+      case "recycler":
+        return "XCUIElementTypeCollectionView"
       case "scroller":
         return "XCUIElementTypeScrollView";
       case "div":
@@ -37,6 +41,10 @@ function mapFunc(node, isIOS){
       return "android.widget.VideoView";
     case "web":
       return "android.webkit.WebView";
+    case "waterfall":
+        return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.support.v7.widget.RecyclerView";
+      case "recycler":
+        return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.support.v7.widget.RecyclerView";
     case "list":
       return "android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.support.v7.widget.RecyclerView";
     case "scroller":
