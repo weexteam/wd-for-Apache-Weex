@@ -20,6 +20,8 @@ function mapFunc(node, isIOS){
         return "XCUIElementTypeCollectionView"
       case "scroller":
         return "XCUIElementTypeScrollView";
+      case "cell":
+        return "XCUIElementTypeCell"
       case "div":
       default:
         return "XCUIElementTypeOther"
