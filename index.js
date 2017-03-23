@@ -10,6 +10,8 @@ function mapFunc(node, isIOS){
     switch (node) {
       case "input":
         return "XCUIElementTypeTextField";
+      case "textarea":
+        return "XCUIElementTypeTextView";
       case "text":
         return "XCUIElementTypeStaticText";
       case "list":
