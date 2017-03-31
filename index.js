@@ -1,6 +1,8 @@
 var WD = require("webdriver-client");
 var _ = require("lodash");
 
+const ANDROID_ID_PREFIX = 'com.alibaba.weex:id/'
+const ANDROID_INFO_ID = ANDROID_ID_PREFIX+'container'
 const XPATH_PREFIX = {
   android: "//android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.widget.LinearLayout[1]/android.widget.FrameLayout[1]/android.view.View[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]/android.widget.FrameLayout[1]",
   ios: "//XCUIElementTypeApplication[1]/XCUIElementTypeWindow[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]/XCUIElementTypeOther[1]",
@@ -157,17 +159,7 @@ module.exports = function(opts) {
       };
     }
 
-    //elementsByXPath
-    var _elementsByXPath = ins.elementsByXPath;
-    ins.elementsByXPath = function(path) {
-      return this.wElements(path);
-    };
-    ins._elementsByXPath = _elementsByXPath;
-
-    //elementsByXPath
-    var _elementByXPath = ins.elementByXPath;
-    ins.elementByXPath = function(path) {
-      return this.wElement(path).then(function(d) {
+    const wrapElem = function(d) {
         if (d != undefined) {
           d._text = d.text;
           if (_target === "ios") {
@@ -197,7 +189,71 @@ module.exports = function(opts) {
           }
         }
         return d;
-      });
+      }
+
+    //elementById
+    if(_target == 'android'){
+      ins._elementsById = ins.elementsById
+      ins.elementsById = function(id){
+        return this
+        ._elementsById(ANDROID_INFO_ID)
+        .then(elems=>{
+          return elems[0]
+        })
+        .getProperty('description')
+        .then((data)=>{
+          var nativeId = ANDROID_ID_PREFIX+JSON.parse(data.description)[id]
+          return this._elementsById(nativeId)
+        })
+      }
+
+      ins._elementById = ins.elementById
+      ins.elementById = function(id){
+        return this
+        .elementsById(id)
+        .then(function(el) {
+          return el[0];
+        }).then(wrapElem);
+      }
+
+      //waitForElementById
+      ins._waitForElementById = ins.waitForElementById
+      const waitForIdMap = function(ins,id,time,interval,retry){
+        return ins.sleep(2000).waitForElementById(id,time,interval,retry)
+      }
+      ins.waitForElementById = function(id,time,interval,retry) {
+        if(!retry){
+          retry = 0
+        }
+        return this._elementsById(ANDROID_INFO_ID)
+        .then(elems=>{
+          return elems[0]
+        })
+        .getProperty('description')
+        .then((data)=>{
+          if(retry<5 && !data.description){
+            console.log("wait for id map")
+            return waitForIdMap(this,id,time,interval,++retry);
+          }
+          var nativeId = ANDROID_ID_PREFIX+JSON.parse(data.description)[id]
+          return this._waitForElementById(nativeId)
+        })
+      }
+    }
+
+    
+
+    //elementsByXPath
+    var _elementsByXPath = ins.elementsByXPath;
+    ins.elementsByXPath = function(path) {
+      return this.wElements(path);
+    };
+    ins._elementsByXPath = _elementsByXPath;
+
+    //elementsByXPath
+    var _elementByXPath = ins.elementByXPath;
+    ins.elementByXPath = function(path) {
+      return this.wElement(path).then(wrapElem);
     };
     ins._elementByXPath = _elementByXPath;
 
@@ -207,6 +263,7 @@ module.exports = function(opts) {
       return this.wWaitForElementByXPath(path, time, interval);
     };
     ins._waitForElementByXPath = _waitForElementByXPath;
+
 
     //back
     var _back = ins.back;
