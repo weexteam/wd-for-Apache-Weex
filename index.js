@@ -195,20 +195,24 @@ module.exports = function(opts) {
     ins._elementsById = ins.elementsById;
     let _androidIdMap = {};
     if (_target == "android") {
-      setInterval(function(){
-        ins._elementsById(ANDROID_INFO_ID)
-        .then(elems => {
-          return elems[0];
-        })
-        .getProperty("description")
-        .then(data => {
-            _androidIdMap = JSON.parse(data.description);
-          });
-      },2000)
-
       ins.elementsById = function(id) {
-        return this
-        ._elementsById(ANDROID_ID_PREFIX + _androidIdMap[id])
+        if(_androidIdMap[id] != undefined){
+          return this
+            ._elementsById(ANDROID_ID_PREFIX + _androidIdMap[id])
+        }else{
+          return this
+            ._elementsById(ANDROID_INFO_ID)
+            .then(elems => {
+              return elems[0];
+            })
+            .getProperty("description")
+            .then(data => {
+                _androidIdMap = JSON.parse(data.description);
+                return this._elementsById(ANDROID_ID_PREFIX + _androidIdMap[id])
+              })
+            
+        }
+        
       };
     }
 
@@ -225,7 +229,19 @@ module.exports = function(opts) {
     if (_target === "android") {
       ins._waitForElementById = ins.waitForElementById;
       const waitForIdMap = function(ins, id, time, interval, retry) {
-        return ins.sleep(2000).waitForElementById(id, time, interval, retry);
+        return ins
+        .sleep(_slowEnv?5000:2000)
+        .then(()=>{
+          return ins._elementsById(ANDROID_INFO_ID)
+        })
+        .then(elems => {
+          return elems[0];
+        })
+        .getProperty("description")
+        .then(data => {
+            _androidIdMap = JSON.parse(data.description);
+          })
+        .waitForElementById(id, time, interval, retry);
       };
       ins.waitForElementById = function(id, time, interval, retry) {
         if (!retry) {
@@ -234,7 +250,7 @@ module.exports = function(opts) {
         if(_androidIdMap[id] != undefined){
           console.log("native id found.");
           return this._waitForElementById(ANDROID_ID_PREFIX + _androidIdMap[id]);
-        }else if(retry<5){
+        }else if(retry<(_slowEnv?10:5)){
           console.log("wait for id map");
           return waitForIdMap(this, id, time, interval, ++retry);
         }else{
