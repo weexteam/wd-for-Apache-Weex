@@ -193,17 +193,22 @@ module.exports = function(opts) {
 
     //elementById
     ins._elementsById = ins.elementsById;
+    let _androidIdMap = {};
     if (_target == "android") {
-      ins.elementsById = function(id) {
-        return this._elementsById(ANDROID_INFO_ID)
-          .then(elems => {
-            return elems[0];
-          })
-          .getProperty("description")
-          .then(data => {
-            var nativeId = ANDROID_ID_PREFIX + JSON.parse(data.description)[id];
-            return this._elementsById(nativeId);
+      setInterval(function(){
+        ins._elementsById(ANDROID_INFO_ID)
+        .then(elems => {
+          return elems[0];
+        })
+        .getProperty("description")
+        .then(data => {
+            _androidIdMap = JSON.parse(data.description);
           });
+      },2000)
+
+      ins.elementsById = function(id) {
+        return this
+        ._elementsById(ANDROID_ID_PREFIX + _androidIdMap[id])
       };
     }
 
@@ -226,19 +231,15 @@ module.exports = function(opts) {
         if (!retry) {
           retry = 0;
         }
-        return this._elementsById(ANDROID_INFO_ID)
-          .then(elems => {
-            return elems[0];
-          })
-          .getProperty("description")
-          .then(data => {
-            if (retry < 5 && !data.description) {
-              console.log("wait for id map");
-              return waitForIdMap(this, id, time, interval, ++retry);
-            }
-            var nativeId = ANDROID_ID_PREFIX + JSON.parse(data.description)[id];
-            return this._waitForElementById(nativeId);
-          });
+        if(_androidIdMap[id] != undefined){
+          console.log("native id found.");
+          return this._waitForElementById(ANDROID_ID_PREFIX + _androidIdMap[id]);
+        }else if(retry<5){
+          console.log("wait for id map");
+          return waitForIdMap(this, id, time, interval, ++retry);
+        }else{
+          throw new Error("native id not found, retry over limit.")
+        }
       };
     }
 
