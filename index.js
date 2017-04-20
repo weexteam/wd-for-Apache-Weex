@@ -283,6 +283,7 @@ module.exports = function(opts) {
     //back
     var _back = ins.back;
     ins.back = function() {
+      _androidIdMap = []
       if (_slowEnv) {
         return this.wBack().sleep(5000);
       }
